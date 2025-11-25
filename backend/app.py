@@ -1,16 +1,22 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from functools import wraps
 import os
+from config.config import Config
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 
-# Configuration de la base de données
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notes.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'votre-clé-secrète-très-difficile-à-deviner') # À changer en production
+# Charger la configuration depuis le fichier config.py
+app.config.from_object(Config)
+
+# S'assurer que le dossier 'instance' existe
+try:
+    os.makedirs(app.instance_path)
+except OSError:
+    pass
+
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -43,6 +49,10 @@ def role_required(role):
                 return jsonify({"msg": "Accès non autorisé pour ce rôle"}), 403
         return decorator
     return wrapper
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # Routes pour l'authentification
 @app.route('/api/auth/register', methods=['POST'])
