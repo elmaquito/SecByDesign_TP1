@@ -1,0 +1,2 @@
+# Ce fichier est laissé vide intentionnellement.
+# La base de données SQLite (notes.db) sera créée par l'application Flask.
